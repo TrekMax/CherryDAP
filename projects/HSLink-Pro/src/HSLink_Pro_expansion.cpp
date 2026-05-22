@@ -51,6 +51,18 @@ static uint32_t GPIO_Power_EN = IOC_PAD_PA31;
 static uint32_t GPIO_Port_EN = IOC_PAD_PA04;
 static uint32_t GPIO_BTN = IOC_PAD_PA03;
 
+static api_boot_arg_t MakeBootArg(uint32_t peripheral, uint32_t src) {
+    api_boot_arg_t boot_arg;
+
+    boot_arg.U = 0;
+    boot_arg.index = 0;
+    boot_arg.peripheral = peripheral;
+    boot_arg.src = src;
+    boot_arg.tag = API_BOOT_TAG;
+
+    return boot_arg;
+}
+
 static void IONum_Init() {
     if (CheckHardwareVersion(0, 0, 0) or
         CheckHardwareVersion(1, 2, 0xFF)) {
@@ -512,12 +524,7 @@ extern "C" void HSP_Reboot(void) {
     l1c_dc_disable();
     fencei();
 
-    api_boot_arg_t boot_arg = {
-            .index = 0,
-            .peripheral = API_BOOT_PERIPH_AUTO,
-            .src = API_BOOT_SRC_PRIMARY,
-            .tag = API_BOOT_TAG,
-    };
+    api_boot_arg_t boot_arg = MakeBootArg(API_BOOT_PERIPH_AUTO, API_BOOT_SRC_PRIMARY);
 
     ROM_API_TABLE_ROOT->run_bootloader(&boot_arg);
 }
@@ -532,12 +539,7 @@ extern "C" void HSP_EnterHSLinkBootloader(void) {
     l1c_dc_disable();
     fencei();
 
-    api_boot_arg_t boot_arg = {
-            .index = 0,
-            .peripheral = API_BOOT_PERIPH_AUTO,
-            .src = API_BOOT_SRC_PRIMARY,
-            .tag = API_BOOT_TAG,
-    };
+    api_boot_arg_t boot_arg = MakeBootArg(API_BOOT_PERIPH_AUTO, API_BOOT_SRC_PRIMARY);
 
     ROM_API_TABLE_ROOT->run_bootloader(&boot_arg);
 }
@@ -552,12 +554,7 @@ extern "C" void HSP_EntrySysBootloader(void) {
     l1c_dc_disable();
     fencei();
 
-    api_boot_arg_t boot_arg = {
-            .index = 0,
-            .peripheral = API_BOOT_PERIPH_UART,
-            .src = API_BOOT_SRC_ISP,
-            .tag = API_BOOT_TAG,
-    };
+    api_boot_arg_t boot_arg = MakeBootArg(API_BOOT_PERIPH_UART, API_BOOT_SRC_ISP);
 
     ROM_API_TABLE_ROOT->run_bootloader(&boot_arg);
 }

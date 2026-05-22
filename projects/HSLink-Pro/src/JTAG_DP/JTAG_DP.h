@@ -12,6 +12,13 @@ void IO_JTAG_WriteAbort (uint32_t data);
 void IO_JTAG_IR (uint32_t ir);
 uint8_t  IO_JTAG_Transfer(uint32_t request, uint32_t *data);
 
+void CJTAG_PORT_JTAG_SETUP(void);
+void CJTAG_JTAG_Sequence (uint32_t info, const uint8_t *tdi, uint8_t *tdo);
+uint32_t CJTAG_JTAG_ReadIDCode (void);
+void CJTAG_JTAG_WriteAbort (uint32_t data);
+void CJTAG_JTAG_IR (uint32_t ir);
+uint8_t  CJTAG_JTAG_Transfer(uint32_t request, uint32_t *data);
+
 
 void SPI_PORT_JTAG_SETUP(void);
 void SPI_JTAG_Sequence (uint32_t info, const uint8_t *tdi, uint8_t *tdo);

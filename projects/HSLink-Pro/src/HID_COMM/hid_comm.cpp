@@ -122,6 +122,19 @@ static void FillStatus(HID_Response_t status, char *res)
     FillStatus(status, res, "");
 }
 
+static JTAG_Protocol_t parse_jtag_protocol(const char *protocol)
+{
+    if (strcmp(protocol, "cjtag") == 0) {
+        return JTAG_PROTOCOL_CJTAG;
+    }
+    return JTAG_PROTOCOL_JTAG;
+}
+
+static const char *stringify_jtag_protocol(JTAG_Protocol_t protocol)
+{
+    return protocol == JTAG_PROTOCOL_CJTAG ? "cjtag" : "jtag";
+}
+
 static void Hello(Document &root, char *res)
 {
     (void) root;
@@ -206,6 +219,7 @@ static void settings(Document &root, char *res)
     };
     HSLink_Setting.swd_port_mode = mode(data["swd_port_mode"].GetString());
     HSLink_Setting.jtag_port_mode = mode(data["jtag_port_mode"].GetString());
+    HSLink_Setting.jtag_protocol = parse_jtag_protocol(get_json_value(data, "jtag_protocol", "jtag"));
 
     const Value &power = data["power"];
     HSLink_Setting.power.vref = power["vref"].GetDouble();
@@ -316,6 +330,9 @@ static void get_setting(Document &root, char *res)
 
     writer.Key("jtag_port_mode");
     writer.String(HSLink_Setting.jtag_port_mode == PORT_MODE_SPI ? "spi" : "gpio");
+
+    writer.Key("jtag_protocol");
+    writer.String(stringify_jtag_protocol(HSLink_Setting.jtag_protocol));
 
     writer.Key("jtag_single_bit_mode");
     writer.Bool(1);

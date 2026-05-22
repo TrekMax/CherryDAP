@@ -20,6 +20,7 @@ const HSLink_Setting_t default_setting = {
         .boost = false,
         .swd_port_mode = PORT_MODE_SPI,
         .jtag_port_mode = PORT_MODE_SPI,
+        .jtag_protocol = JTAG_PROTOCOL_JTAG,
         .power = {
                 .vref = 3.3,
                 .power_on = true,
@@ -34,6 +35,7 @@ HSLink_Setting_t HSLink_Setting = {
         .boost = false,
         .swd_port_mode = PORT_MODE_SPI,
         .jtag_port_mode = PORT_MODE_SPI,
+        .jtag_protocol = JTAG_PROTOCOL_JTAG,
         .power = {
                 .vref = 3.3,
                 .power_on = false,
@@ -89,6 +91,19 @@ auto get_json_value<const char*>(const rapidjson::Value &val, const char *key, c
     return value;
 }
 
+static JTAG_Protocol_t parse_jtag_protocol(const char *protocol)
+{
+    if (strcmp(protocol, "cjtag") == 0) {
+        return JTAG_PROTOCOL_CJTAG;
+    }
+    return JTAG_PROTOCOL_JTAG;
+}
+
+static const char *stringify_jtag_protocol(JTAG_Protocol_t protocol)
+{
+    return protocol == JTAG_PROTOCOL_CJTAG ? "cjtag" : "jtag";
+}
+
 static void store_settings();
 
 static void load_settings();
@@ -109,6 +124,9 @@ static std::string stringify_settings()
 
     writer.Key("jtag_port_mode");
     writer.String(HSLink_Setting.jtag_port_mode == PORT_MODE_SPI ? "spi" : "gpio");
+
+    writer.Key("jtag_protocol");
+    writer.String(stringify_jtag_protocol(HSLink_Setting.jtag_protocol));
 
     writer.Key("power");
     {
@@ -168,6 +186,7 @@ static void parse_settings(std::string_view json)
 
     HSLink_Setting.swd_port_mode = mode(root["swd_port_mode"].GetString());
     HSLink_Setting.jtag_port_mode = mode(root["jtag_port_mode"].GetString());
+    HSLink_Setting.jtag_protocol = parse_jtag_protocol(get_json_value(root, "jtag_protocol", "jtag"));
 
     const Value &power = root["power"];
     HSLink_Setting.power.vref = power["vref"].GetDouble();

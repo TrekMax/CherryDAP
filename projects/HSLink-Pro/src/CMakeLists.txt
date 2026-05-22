@@ -71,6 +71,7 @@ sdk_app_inc(JTAG_DP)
 sdk_app_src(JTAG_DP/JTAG_DP.c)
 sdk_app_src(JTAG_DP/JTAG_DP_SPI.c)
 sdk_app_src(JTAG_DP/JTAG_DP_IO.c)
+sdk_app_src(JTAG_DP/CJTAG_DP_IO.c)
 
 sdk_app_src(swd_host/swd_host.c)
 sdk_app_inc(swd_host)

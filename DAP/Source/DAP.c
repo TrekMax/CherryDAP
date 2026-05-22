@@ -79,6 +79,11 @@ __attribute__((weak)) void Set_Clock_Delay(uint32_t clock) {
   }
 }
 
+// Optional project hook to reject JTAG when the selected physical protocol is unavailable.
+__attribute__((weak)) uint8_t JTAG_ProtocolReady(void) {
+  return 1U;
+}
+
 
 // Get DAP Information
 //   id:      info identifier
@@ -256,6 +261,10 @@ static uint32_t DAP_Connect(const uint8_t *request, uint8_t *response) {
 #endif
 #if (DAP_JTAG != 0)
     case DAP_PORT_JTAG:
+      if (JTAG_ProtocolReady() == 0U) {
+        port = DAP_PORT_DISABLED;
+        break;
+      }
       DAP_Data.debug_port = DAP_PORT_JTAG;
       PORT_JTAG_SETUP();
       break;
@@ -544,7 +553,8 @@ static uint32_t DAP_JTAG_Sequence(const uint8_t *request, uint8_t *response) {
   uint32_t count;
 
 #if (DAP_JTAG != 0)
-  *response++ = DAP_OK;
+  uint8_t jtag_ready = JTAG_ProtocolReady();
+  *response++ = (jtag_ready != 0U) ? DAP_OK : DAP_ERROR;
 #else
   *response++ = DAP_ERROR;
 #endif
@@ -560,12 +570,14 @@ static uint32_t DAP_JTAG_Sequence(const uint8_t *request, uint8_t *response) {
       }
       count = (count + 7U) / 8U;
 #if (DAP_JTAG != 0)
-    JTAG_Sequence(sequence_info, request, response);
+    if (jtag_ready != 0U) {
+      JTAG_Sequence(sequence_info, request, response);
+    }
 #endif
     request += count;
     request_count += count + 1U;
 #if (DAP_JTAG != 0)
-    if ((sequence_info & JTAG_SEQUENCE_TDO) != 0U) {
+    if ((jtag_ready != 0U) && ((sequence_info & JTAG_SEQUENCE_TDO) != 0U)) {
       response += count;
       response_count += count;
     }
@@ -623,6 +635,9 @@ static uint32_t DAP_JTAG_IDCode(const uint8_t *request, uint8_t *response) {
   uint32_t data;
 
   if (DAP_Data.debug_port != DAP_PORT_JTAG) {
+    goto id_error;
+  }
+  if (JTAG_ProtocolReady() == 0U) {
     goto id_error;
   }
 
@@ -1564,6 +1579,11 @@ static uint32_t DAP_SWD_WriteAbort(const uint8_t *request, uint8_t *response) {
 #if (DAP_JTAG != 0)
 static uint32_t DAP_JTAG_WriteAbort(const uint8_t *request, uint8_t *response) {
   uint32_t data;
+
+  if (JTAG_ProtocolReady() == 0U) {
+    *response = DAP_ERROR;
+    return (1U);
+  }
 
   // Device index (JTAP TAP)
   DAP_Data.jtag_dev.index = *request;

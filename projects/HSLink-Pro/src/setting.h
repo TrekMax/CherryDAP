@@ -11,6 +11,11 @@ typedef enum {
     PORT_MODE_SPI = 1,
 } PORT_Mode_t;
 
+typedef enum {
+    JTAG_PROTOCOL_JTAG = 0,
+    JTAG_PROTOCOL_CJTAG = 1,
+} JTAG_Protocol_t;
+
 typedef struct {
     double vref;
     bool power_on;
@@ -32,6 +37,7 @@ typedef struct {
     bool boost;
     PORT_Mode_t swd_port_mode;
     PORT_Mode_t jtag_port_mode;
+    JTAG_Protocol_t jtag_protocol;
     Setting_Power_t power;
     uint8_t reset; //这是一个Bitmap，用来存储多种设置，每一位的功能见Setting_ResetBit_t
     bool led;
